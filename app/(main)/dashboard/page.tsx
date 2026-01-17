@@ -114,7 +114,7 @@ const FormsDashboard = () => {
                             <h1 className="text-3xl font-bold tracking-tight">Forms</h1>
                             <p className="text-muted-foreground mt-1">Manage and track all your forms in one place</p>
                         </div>
-                        <Button onClick={() => router.push("/create")} className="gap-2">
+                        <Button onClick={() => router.push("/create/null")} className="gap-2">
                             <Plus className="w-4 h-4" />
                             Create New Form
                         </Button>
@@ -212,7 +212,7 @@ const FormsDashboard = () => {
                                 {searchQuery ? 'Try adjusting your search or filters' : 'Get started by creating your first form'}
                             </p>
                             {!searchQuery && (
-                                <Button className="gap-2">
+                                <Button onClick={() => router.push("/create/null")} className="gap-2">
                                     <Plus className="w-4 h-4" />
                                     Create New Form
                                 </Button>
@@ -280,7 +280,7 @@ const FormsDashboard = () => {
                                         </div>
                                         <div className="flex gap-2 pt-2">
 
-                                            <Button className="flex-1 gap-2" size="sm">
+                                            <Button onClick={() => router.push(`/create/${form.id}`)} className="flex-1 gap-2" size="sm">
                                                 <Edit className="w-4 h-4" />
                                                 Edit
                                             </Button>

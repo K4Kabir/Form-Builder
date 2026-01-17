@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,6 +16,7 @@ import { useSession } from '@/lib/auth-client';
 import { Spinner } from '../ui/spinner';
 import axios from 'axios'
 import { toast } from 'sonner';
+import { useParams, useRouter } from 'next/navigation';
 
 interface FormElement {
     id: string;
@@ -43,12 +44,33 @@ const FormBuilder = () => {
     const [isEditingDescription, setIsEditingDescription] = useState(false);
     const [saving, setSaving] = useState<boolean>(false)
     const session = useSession()
+    const router = useRouter();
+    const { id } = useParams();
 
 
-    const saveForm = async function () {
+    const getDraftData = async function () {
+        if (!id) return
+        try {
+            let response = await axios.post('/api/getDraftPostData', { id: id })
+
+            if (response) {
+                setFormElements(response.data.content);
+                setFormTitle(response.data.title)
+                setFormDescription(response.data.description)
+            }
+        } catch (error) {
+            toast.error("Something went wrong")
+        } finally {
+
+        }
+    }
+
+
+    const saveForm = async function (type: string) {
         try {
             setSaving(true)
             const response = await axios.post('/api/createForm', {
+                id: id ?? undefined,
                 userId: session.data?.user.id,
                 title,
                 description,
@@ -56,16 +78,20 @@ const FormBuilder = () => {
             })
 
             if (response) {
-                console.log(response.data)
+                router.push(`/create/${response.data.id}`)
             }
-
-
         } catch (error) {
             toast.error("Something went wrong")
         } finally {
             setSaving(false)
         }
     }
+
+
+    useEffect(() => {
+
+        getDraftData()
+    }, [])
 
 
     const componentTypes: ComponentType[] = [
@@ -148,9 +174,9 @@ const FormBuilder = () => {
             case 'text':
             case 'email':
             case 'number':
-                return <Input type={element.type} {...commonProps} />;
+                return <Input disabled type={element.type} {...commonProps} />;
             case 'textarea':
-                return <Textarea {...commonProps} rows={3} />;
+                return <Textarea disabled {...commonProps} rows={3} />;
             case 'select':
                 return (
                     <Select>
@@ -185,11 +211,11 @@ const FormBuilder = () => {
                     </div>
                 );
             case 'date':
-                return <Input type="date" {...commonProps} />;
+                return <Input disabled type="date" {...commonProps} />;
             case 'button':
                 return <Button className="w-full">Submit</Button>;
             default:
-                return <Input {...commonProps} />;
+                return <Input disabled {...commonProps} />;
         }
     };
 
@@ -228,7 +254,7 @@ const FormBuilder = () => {
                             <Trash2 className="w-5 h-5" />
                         </Button>
 
-                        <Button onClick={() => saveForm()} variant="outline" >
+                        <Button onClick={() => saveForm("SAVE_DRAFT")} variant="outline" >
                             {saving && <Spinner />} Save as draft
                         </Button>
 
