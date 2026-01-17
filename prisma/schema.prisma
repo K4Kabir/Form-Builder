@@ -97,5 +97,5 @@ model FormSubmission {
 
   // The answers from the user
   // Format: { "field_id_1": "Answer", "field_id_2": "Answer" }
-  answers Json
+  answers Json @default("[]")
 }
