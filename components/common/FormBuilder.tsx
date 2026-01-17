@@ -12,6 +12,10 @@ import {
     Type, Hash, Mail, CheckSquare, Circle, AlignLeft, Calendar, MousePointerClick,
     Trash2, GripVertical, ChevronLeft, Copy
 } from 'lucide-react';
+import { useSession } from '@/lib/auth-client';
+import { Spinner } from '../ui/spinner';
+import axios from 'axios'
+import { toast } from 'sonner';
 
 interface FormElement {
     id: string;
@@ -37,6 +41,39 @@ const FormBuilder = () => {
     const [draggedItem, setDraggedItem] = useState<FormElement | null>(null);
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [isEditingDescription, setIsEditingDescription] = useState(false);
+    const [saving, setSaving] = useState<boolean>(false)
+    const session = useSession()
+
+
+    const saveForm = async function () {
+        try {
+            setSaving(true)
+            const response = await axios.post('/api/createForm', {
+                userId: session.data?.user.id,
+                title: formTitle,
+                description: formDescription,
+                content: [...formElements]
+            })
+
+            if (response) {
+                console.log(response.data)
+            }
+
+
+        } catch (error) {
+            toast.error("Something went wrong")
+        } finally {
+            setSaving(false)
+        }
+    }
+
+
+    console.log({
+        userId: session.data?.user.id,
+        title: formTitle,
+        description: formDescription,
+        content: [...formElements]
+    })
 
     const componentTypes: ComponentType[] = [
         { type: 'text', icon: Type, label: 'Name' },
@@ -189,7 +226,7 @@ const FormBuilder = () => {
 
             {/* Center - Form Canvas */}
             <div className="flex-1 p-6 overflow-y-auto bg-muted/30">
-                <div className="max-w-2xl mx-auto">
+                <div className="max-w-3xl mx-auto">
                     <div className="flex items-center gap-2 mb-6">
                         <Button variant="ghost" size="icon">
                             <ChevronLeft className="w-5 h-5" />
@@ -197,6 +234,11 @@ const FormBuilder = () => {
                         <Button variant="ghost" size="icon">
                             <Trash2 className="w-5 h-5" />
                         </Button>
+
+                        <Button onClick={() => saveForm()} variant="outline" >
+                            {saving && <Spinner />} Save as draft
+                        </Button>
+
                     </div>
 
                     <Card className="shadow-lg">
@@ -247,8 +289,8 @@ const FormBuilder = () => {
                                         onDragOver={(e) => handleDragOver(e, element)}
                                         onClick={() => setSelectedElement(element)}
                                         className={`relative group p-4 rounded-lg border-2 transition-all cursor-move ${selectedElement?.id === element.id
-                                                ? 'border-primary bg-primary/5'
-                                                : 'border-transparent hover:border-border hover:bg-accent/50'
+                                            ? 'border-primary bg-primary/5'
+                                            : 'border-transparent hover:border-border hover:bg-accent/50'
                                             }`}
                                     >
                                         <div className="flex items-start gap-3">

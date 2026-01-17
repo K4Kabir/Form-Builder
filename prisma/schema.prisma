@@ -8,6 +8,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum FORM_STATUS {
+  DRAFT
+  PUBLISHED
+}
+
 model User {
   id            String    @id
   name          String
@@ -70,13 +75,14 @@ model Verification {
 
 // Form builder 
 model Form {
-  id          String   @id @default(cuid())
+  id          String      @id @default(cuid())
   userId      String
-  createdAt   DateTime @default(now())
-  published   Boolean  @default(false)
+  createdAt   DateTime    @default(now())
+  published   Boolean     @default(false)
   title       String
-  description String   @default("")
-  shareUrl    String   @unique @default(uuid())
+  description String      @default("")
+  shareUrl    String      @unique @default(uuid())
+  status      FORM_STATUS @default(DRAFT)
 
   content Json @default("[]")
 
