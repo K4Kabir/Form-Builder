@@ -34,8 +34,8 @@ interface ComponentType {
 }
 
 const FormBuilder = () => {
-    const [formTitle, setFormTitle] = useState('Customer Feedback Survey');
-    const [formDescription, setFormDescription] = useState('Please share your thoughts with us');
+    const [title, setFormTitle] = useState('Customer Feedback Survey');
+    const [description, setFormDescription] = useState('Please share your thoughts with us');
     const [formElements, setFormElements] = useState<FormElement[]>([]);
     const [selectedElement, setSelectedElement] = useState<FormElement | null>(null);
     const [draggedItem, setDraggedItem] = useState<FormElement | null>(null);
@@ -50,8 +50,8 @@ const FormBuilder = () => {
             setSaving(true)
             const response = await axios.post('/api/createForm', {
                 userId: session.data?.user.id,
-                title: formTitle,
-                description: formDescription,
+                title,
+                description,
                 content: [...formElements]
             })
 
@@ -67,13 +67,6 @@ const FormBuilder = () => {
         }
     }
 
-
-    console.log({
-        userId: session.data?.user.id,
-        title: formTitle,
-        description: formDescription,
-        content: [...formElements]
-    })
 
     const componentTypes: ComponentType[] = [
         { type: 'text', icon: Type, label: 'Name' },
@@ -246,7 +239,7 @@ const FormBuilder = () => {
                             <div className="mb-8">
                                 {isEditingTitle ? (
                                     <Input
-                                        value={formTitle}
+                                        value={title}
                                         onChange={(e) => setFormTitle(e.target.value)}
                                         onBlur={() => setIsEditingTitle(false)}
                                         className="text-2xl font-semibold mb-2 border-none shadow-none focus-visible:ring-0 px-0"
@@ -257,13 +250,13 @@ const FormBuilder = () => {
                                         className="text-2xl font-semibold mb-2 cursor-pointer hover:bg-accent/50 px-2 py-1 rounded -mx-2"
                                         onClick={() => setIsEditingTitle(true)}
                                     >
-                                        {formTitle}
+                                        {title}
                                     </h1>
                                 )}
 
                                 {isEditingDescription ? (
                                     <Textarea
-                                        value={formDescription}
+                                        value={description}
                                         onChange={(e) => setFormDescription(e.target.value)}
                                         onBlur={() => setIsEditingDescription(false)}
                                         className="text-sm text-muted-foreground border-none shadow-none focus-visible:ring-0 px-0 resize-none"
@@ -275,7 +268,7 @@ const FormBuilder = () => {
                                         className="text-sm text-muted-foreground cursor-pointer hover:bg-accent/50 px-2 py-1 rounded -mx-2"
                                         onClick={() => setIsEditingDescription(true)}
                                     >
-                                        {formDescription}
+                                        {description}
                                     </p>
                                 )}
                             </div>

@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     const { userId } = body;
 
     if (!userId) {
-      return new NextResponse("User is required to save the form data", {
+      return new NextResponse("User id is required to get the form data", {
         status: 401,
       });
     }
