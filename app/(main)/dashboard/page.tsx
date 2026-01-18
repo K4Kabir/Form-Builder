@@ -63,6 +63,17 @@ const FormsDashboard = () => {
         }
     }
 
+
+    const deleteFormAPI = async (id: string | number) => {
+        try {
+            await axios.post('/api/deleteForm', { id: id })
+            return true
+        } catch (error) {
+            toast.error("Something went wrong")
+            return false
+        }
+    }
+
     useEffect(() => {
         if (!isPending)
             getUserForm()
@@ -94,15 +105,13 @@ const FormsDashboard = () => {
         totalResponses: forms?.reduce((acc, form) => acc + form.responses, 0),
     };
 
-    const handleDelete = (id: string) => {
-        setForms(forms?.filter(form => form.id !== id));
+    const handleDelete = async (id: string) => {
+        let response = await deleteFormAPI(id)
+        if (response) {
+            setForms(forms?.filter(form => form.id !== id));
+        }
     };
 
-    const handleStatusChange = (id: string, newStatus: Form['status']) => {
-        setForms(forms?.map(form =>
-            form.id === id ? { ...form, status: newStatus } : form
-        ));
-    };
 
     return (
         <div className="min-h-screen bg-background">

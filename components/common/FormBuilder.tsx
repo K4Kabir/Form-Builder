@@ -89,7 +89,6 @@ const FormBuilder = () => {
 
 
     useEffect(() => {
-
         getDraftData()
     }, [])
 
