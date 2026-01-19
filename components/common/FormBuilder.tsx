@@ -23,6 +23,7 @@ interface FormElement {
     type: string;
     label: string;
     placeholder: string;
+    editable: boolean;
     required: boolean;
     order: number;
     options?: string[];
@@ -43,6 +44,7 @@ const FormBuilder = () => {
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [isEditingDescription, setIsEditingDescription] = useState(false);
     const [saving, setSaving] = useState<boolean>(false)
+    const [fillerInformationRequired, setFillterInformationRequired] = useState<boolean>(false);
     const session = useSession()
     const router = useRouter();
     const { id } = useParams();
@@ -53,8 +55,14 @@ const FormBuilder = () => {
         try {
             let response = await axios.post('/api/getDraftPostData', { id: id })
 
+            if (!response?.data?.content?.[0]?.editable) {
+                setFillterInformationRequired(true)
+            }
+
+            let formData = response?.data?.content?.filter((f: any) => f?.editable)
+
             if (response) {
-                setFormElements(response.data.content);
+                setFormElements(formData);
                 setFormTitle(response.data.title)
                 setFormDescription(response.data.description)
             }
@@ -67,6 +75,34 @@ const FormBuilder = () => {
 
 
     const saveForm = async function (type: string) {
+
+        let fm: any = []
+
+        if (fillerInformationRequired) {
+            fm = [
+                {
+                    "id": "personal-info1",
+                    "type": "text",
+                    "label": "Your Full Name",
+                    "required": true,
+                    "placeholder": "Enter text",
+                    "editable": false
+                },
+                {
+                    "id": "personal-info2",
+                    "type": "email",
+                    "label": "Your mail address",
+                    "required": true,
+                    "placeholder": "Enter text",
+                    "editable": false
+                },
+                ...formElements
+            ]
+        } else {
+            fm = [...formElements]
+        }
+
+
         try {
             setSaving(true)
             const response = await axios.post('/api/createForm', {
@@ -74,7 +110,7 @@ const FormBuilder = () => {
                 userId: session.data?.user.id,
                 title,
                 description,
-                content: [...formElements]
+                content: [...fm]
             })
 
             if (response) {
@@ -94,9 +130,8 @@ const FormBuilder = () => {
 
 
     const componentTypes: ComponentType[] = [
-        { type: 'text', icon: Type, label: 'Name' },
+        { type: 'text', icon: Type, label: 'Text' },
         { type: 'email', icon: Mail, label: 'Email' },
-        { type: 'text', icon: Type, label: 'Address' },
         { type: 'textarea', icon: AlignLeft, label: 'Single Line' },
         { type: 'textarea', icon: AlignLeft, label: 'Multi Line' },
         { type: 'number', icon: Hash, label: 'Number' },
@@ -114,6 +149,7 @@ const FormBuilder = () => {
             label: label || `New ${type.charAt(0).toUpperCase() + type.slice(1)}`,
             placeholder: `Enter ${type}`,
             required: false,
+            editable: true,
             order: formElements.length + 1,
             options: type === 'select' || type === 'radio' ? ['Option 1', 'Option 2', 'Option 3'] : undefined
         };
@@ -226,6 +262,15 @@ const FormBuilder = () => {
                     <h2 className="text-lg font-semibold">Components</h2>
                 </div>
 
+                <div className="flex items-center justify-between p-4">
+                    <Label className="text-sm">Filler Information Required</Label>
+                    <Switch
+                        checked={fillerInformationRequired}
+                        onCheckedChange={(checked) => setFillterInformationRequired(checked)}
+
+                    />
+                </div>
+
                 <div className="p-4">
                     <div className="grid grid-cols-2 gap-2">
                         {componentTypes.map(({ type, icon: Icon, label }) => (
@@ -240,23 +285,24 @@ const FormBuilder = () => {
                         ))}
                     </div>
                 </div>
+
             </div>
 
             {/* Center - Form Canvas */}
             <div className="flex-1 p-6 overflow-y-auto bg-muted/30">
                 <div className="max-w-3xl mx-auto">
-                    <div className="flex items-center gap-2 mb-6">
-                        <Button variant="ghost" size="icon">
-                            <ChevronLeft className="w-5 h-5" />
-                        </Button>
-                        <Button variant="ghost" size="icon">
-                            <Trash2 className="w-5 h-5" />
+                    <div className="flex items-center justify-between gap-2 mb-6">
+
+                        <Button onClick={() => router.push('/dashboard')} variant="outline" >
+                            <ChevronLeft className="w-5 h-5" /> Back
                         </Button>
 
-                        <Button onClick={() => saveForm("SAVE_DRAFT")} variant="outline" >
-                            {saving && <Spinner />} Save as draft
-                        </Button>
-
+                        <div className='flex justify-end gap-1'>
+                            <Button>Publish</Button>
+                            <Button onClick={() => saveForm("SAVE_DRAFT")} variant="outline" >
+                                {saving && <Spinner />} Save as draft
+                            </Button>
+                        </div>
                     </div>
 
                     <Card className="shadow-lg">
