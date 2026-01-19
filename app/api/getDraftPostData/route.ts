@@ -19,7 +19,11 @@ export async function POST(req: Request) {
       where: { id: id },
     });
 
-    return NextResponse.json(forms);
+    if (forms) {
+      return NextResponse.json(forms);
+    }
+
+    return new NextResponse("Internal Error", { status: 404 });
   } catch (error) {
     console.error("[FORM_UPSERT_ERROR]", error);
     return new NextResponse("Internal Error", { status: 500 });
