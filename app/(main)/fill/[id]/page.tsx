@@ -53,6 +53,8 @@ const FormSubmissionPage = () => {
     const [error, setError] = useState<string | null>(null);
     const { id } = useParams()
 
+    console.log(formData)
+
     useEffect(() => {
         getDraftData();
     }, []);
@@ -157,16 +159,26 @@ const FormSubmissionPage = () => {
 
     const onSubmit = async (data: any) => {
         try {
-            // Replace with your actual submission endpoint
-            // const response = await fetch(`/api/forms/${shareUrl}/submit`, {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify(data)
-            // });
+            // Transform answers to include complete field metadata
+            const answersWithMetadata = formData!.content.map(field => ({
+                id: field.id,
+                type: field.type,
+                label: field.label,
+                order: field.order,
+                required: field.required,
+                placeholder: field.placeholder,
+                ...(field.options && { options: field.options }),
+                value: data[field.id] !== undefined ? data[field.id] : (field.type === 'checkbox' ? false : '')
+            }));
 
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            const response = await axios.post(`/api/createSubmission`, {
+                formId: id,
+                answers: answersWithMetadata
+            });
 
-            console.log('Form submitted:', data);
+            if (response) {
+                console.log('Form submitted:', response.data);
+            }
             setIsSubmitted(true);
         } catch (err) {
             setError('Failed to submit form. Please try again.');

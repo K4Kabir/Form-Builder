@@ -17,6 +17,7 @@ import { Spinner } from '../ui/spinner';
 import axios from 'axios'
 import { toast } from 'sonner';
 import { useParams, useRouter } from 'next/navigation';
+import FullPageLoader from './FullPageloader';
 
 interface FormElement {
     id: string;
@@ -37,6 +38,7 @@ interface ComponentType {
 
 const FormBuilder = () => {
     const [title, setFormTitle] = useState('Customer Feedback Survey');
+    const [loading, setLoading] = useState<boolean>(false);
     const [description, setFormDescription] = useState('Please share your thoughts with us');
     const [formElements, setFormElements] = useState<FormElement[]>([]);
     const [selectedElement, setSelectedElement] = useState<FormElement | null>(null);
@@ -52,6 +54,7 @@ const FormBuilder = () => {
 
     const getDraftData = async function () {
         if (!id) return
+        setLoading(true)
         try {
             let response = await axios.post('/api/getDraftPostData', { id: id })
 
@@ -69,15 +72,14 @@ const FormBuilder = () => {
         } catch (error) {
             toast.error("Something went wrong")
         } finally {
-
+            setLoading(false)
         }
     }
 
 
     const saveForm = async function (type: string) {
-
+        console.log(type)
         let fm: any = []
-
         if (fillerInformationRequired) {
             fm = [
                 {
@@ -109,11 +111,16 @@ const FormBuilder = () => {
                 id: id ?? undefined,
                 userId: session.data?.user.id,
                 title,
+                published: type === "PUBLISHED" ? true : false,
+                status: type,
                 description,
                 content: [...fm]
             })
 
             if (response) {
+                if (type === "PUBLISHED") {
+                    router.push("/dashboard")
+                }
                 router.push(`/create/${response.data.id}`)
             }
         } catch (error) {
@@ -125,6 +132,7 @@ const FormBuilder = () => {
 
 
     useEffect(() => {
+        if (id === "null") return
         getDraftData()
     }, [])
 
@@ -254,6 +262,12 @@ const FormBuilder = () => {
         }
     };
 
+    if (loading) {
+        return (
+            <FullPageLoader />
+        )
+    }
+
     return (
         <div className="flex h-screen bg-background text-foreground">
             {/* Left Sidebar - Components */}
@@ -298,8 +312,8 @@ const FormBuilder = () => {
                         </Button>
 
                         <div className='flex justify-end gap-1'>
-                            <Button>Publish</Button>
-                            <Button onClick={() => saveForm("SAVE_DRAFT")} variant="outline" >
+                            <Button onClick={() => saveForm("PUBLISHED")}>Publish</Button>
+                            <Button onClick={() => saveForm("DRAFT")} variant="outline" >
                                 {saving && <Spinner />} Save as draft
                             </Button>
                         </div>

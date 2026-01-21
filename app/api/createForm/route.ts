@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { userId, title, description, content, id } = body;
+    const { userId, title, description, content, id, status, published } = body;
     console.log(id);
 
     if (!userId) {
@@ -27,15 +27,16 @@ export async function POST(req: Request) {
         description,
         content: content || "[]",
         // Keeping status as DRAFT during updates if desired
-        status: "DRAFT",
+        status: status,
+        published: published,
       },
       create: {
         userId,
         title,
         description: description || "",
         content: content || "[]",
-        status: "DRAFT",
-        // shareUrl and id are handled by @default in schema
+        status: status,
+        published: published,
       },
     });
 

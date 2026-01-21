@@ -39,6 +39,9 @@ interface Form {
     responses: number;
     createdAt: string;
     updatedAt: string;
+    _count: {
+        submissions: number
+    }
 }
 
 const FormsDashboard = () => {
@@ -102,7 +105,7 @@ const FormsDashboard = () => {
     const stats = {
         totalForms: forms?.length,
         activeForms: forms?.filter(f => f.status === 'PUBLISHED').length,
-        totalResponses: forms?.reduce((acc, form) => acc + form.responses, 0),
+        totalResponses: forms?.reduce((acc, form) => acc + form._count.submissions, 0),
     };
 
     const handleDelete = async (id: string) => {
@@ -279,7 +282,7 @@ const FormsDashboard = () => {
                                         <div className="flex items-center justify-between text-sm">
                                             <div className="flex items-center gap-2 text-muted-foreground">
                                                 <Users className="w-4 h-4" />
-                                                <span>{form.responses} responses</span>
+                                                <span>{form?._count?.submissions} responses</span>
                                             </div>
 
                                         </div>
@@ -289,10 +292,17 @@ const FormsDashboard = () => {
                                         </div>
                                         <div className="flex gap-2 pt-2">
 
-                                            <Button onClick={() => router.push(`/create/${form.id}`)} className="flex-1 gap-2" size="sm">
+                                            <Button disabled={form.status === 'PUBLISHED'} onClick={() => router.push(`/create/${form.id}`)} className="flex-1 gap-2" size="sm">
                                                 <Edit className="w-4 h-4" />
                                                 Edit
                                             </Button>
+
+                                            {
+                                                form.status === 'PUBLISHED' && <Button onClick={() => router.push(`/create/${form.id}`)} className="flex-1 gap-2" size="sm">
+                                                    <Edit className="w-4 h-4" />
+                                                    View Responses
+                                                </Button>
+                                            }
                                         </div>
                                     </div>
                                 </CardContent>
